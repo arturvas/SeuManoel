@@ -1,0 +1,7 @@
+﻿services:
+  seumanoel.api:
+    image: seumanoel.api
+    build:
+      context: .
+      dockerfile: SeuManoel.API/Dockerfile
+
