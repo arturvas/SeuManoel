@@ -1,8 +1,8 @@
 namespace SeuManoel.API.Core.Dtos;
 
-public class RespostaCaixaDto(string caixaId, List<string> produtos)
+public class RespostaCaixaDto
 {
-    public string CaixaId { get; set; } = caixaId;
-    public List<string> Produtos { get; set; } = produtos; // < ProdutoId>
+    public string? CaixaId { get; set; }
+    public List<string> Produtos { get; set; } = [];
     public string? Observacao { get; set; } = string.Empty;
 }
