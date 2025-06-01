@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace SeuManoel.API.Core.Dtos;
 
 public class ProdutoDto
@@ -8,6 +10,8 @@ public class ProdutoDto
         Dimensoes = dimensoes;
     }
 
+    [JsonPropertyName("produto_id")]
     public string ProdutoId { get; set; }
+    
     public DimensaoDto Dimensoes { get; set; }
 }

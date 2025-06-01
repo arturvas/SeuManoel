@@ -16,9 +16,12 @@ public class PedidosController : ControllerBase
     }
     
     [HttpPost("empacotar")]
-    public IActionResult EmpacotarPedidos([FromBody] List<PedidoDto>? pedidos)
+    public IActionResult EmpacotarPedidos([FromBody] PedidosRequestDto request)
     {
-        var resposta = _empacotamentoService.Empacotar(pedidos);
-        return Ok(resposta);
+        var listaDePedidos = request.Pedidos;
+        var resposta = _empacotamentoService.Empacotar(listaDePedidos);
+        var respostaFinal = new RespostaEmpacotamentoDto{ Pedidos = resposta};
+        
+        return Ok(respostaFinal);
     }
 }
