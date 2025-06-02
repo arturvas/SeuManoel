@@ -1,5 +1,6 @@
 using SeuManoel.API.Core.Dtos;
 using SeuManoel.API.Core.Models;
+using SeuManoel.API.Services.Helpers;
 
 namespace SeuManoel.API.Services;
 
@@ -8,11 +9,7 @@ public class EmpacotamentoService
     public List<RespostaPedidoDto> Empacotar(List<PedidoDto>? pedidos)
     {
         var listaFinalRespostas = new List<RespostaPedidoDto>();
-
-        if (pedidos == null)
-        {
-            return listaFinalRespostas;
-        }
+        if (pedidos == null) return listaFinalRespostas;
 
         var caixasDisponiveis = new List<CaixaDisponivel>
         {
@@ -30,59 +27,55 @@ public class EmpacotamentoService
                 var alturaProduto = produto.Dimensoes.Altura;
                 var larguraProduto = produto.Dimensoes.Largura;
                 var comprimentoProduto = produto.Dimensoes.Comprimento;
-                var caixasPossiveis = new List<CaixaDisponivel>();
 
-                foreach (var caixa in caixasDisponiveis)
+                // … dentro do foreach(produto) …
+                bool encaixado = false;
+
+                // 2) tenta da última caixa aberta para a primeira
+                for (int i = caixasDoPedido.Count - 1; i >= 0; i--)
                 {
-                    if (alturaProduto <= caixa.Altura &&
-                        larguraProduto <= caixa.Largura &&
-                        comprimentoProduto <= caixa.Comprimento)
+                    var rc = caixasDoPedido[i];
+                    if (rc.CaixaId == null) continue;
+                    var def = caixasDisponiveis.First(c => c.CaixaId == rc.CaixaId);
+                    if (EmpacotamentoHelper.CabeNaCaixa(alturaProduto, larguraProduto, comprimentoProduto, def))
                     {
-                        caixasPossiveis.Add(caixa);
+                        rc.Produtos.Add(produto.ProdutoId);
+                        encaixado = true;
+                        break;
                     }
                 }
+                if (encaixado) continue;
 
-                if (caixasPossiveis.Count == 0)
+                // 3) se não coube em nenhuma aberta, escolhe nova menor que o comporte
+                var possiveis = caixasDisponiveis
+                .Where(c => EmpacotamentoHelper.CabeNaCaixa(alturaProduto, larguraProduto, comprimentoProduto, c))
+                    .OrderBy(c => c.Altura * c.Largura * c.Comprimento)
+                    .ToList();
+                if (!possiveis.Any())
                 {
-                    var caixaNaoDisponivel = new RespostaCaixaDto
+                    caixasDoPedido.Add(new RespostaCaixaDto
                     {
                         CaixaId = null,
                         Produtos = new List<string> { produto.ProdutoId },
                         Observacao = "Produto não cabe em nenhuma caixa disponível."
-                    };
-                    caixasDoPedido.Add(caixaNaoDisponivel);
+                    });
                 }
                 else
                 {
-                    var menorCaixa = caixasPossiveis
-                        .OrderBy(caixa => caixa.Altura * caixa.Largura * caixa.Comprimento)
-                        .First();
-
-                    var respostaCaixa = caixasDoPedido
-                        .FirstOrDefault(c => c.CaixaId == menorCaixa.CaixaId);
-
-                    if (respostaCaixa == null)
+                    var menor = possiveis.First();
+                    caixasDoPedido.Add(new RespostaCaixaDto
                     {
-                        respostaCaixa = new RespostaCaixaDto
-                        {
-                            CaixaId = menorCaixa.CaixaId,
-                            Produtos = new List<string> { produto.ProdutoId }
-                        };
-                        caixasDoPedido.Add(respostaCaixa);
-                    }
-                    else
-                    {
-                        respostaCaixa.Produtos.Add(produto.ProdutoId);
-                    }
+                        CaixaId = menor.CaixaId,
+                        Produtos = new List<string> { produto.ProdutoId }
+                    });
                 }
             }
 
-            var respostaPedido = new RespostaPedidoDto
+            listaFinalRespostas.Add(new RespostaPedidoDto
             {
                 PedidoId = pedido.PedidoId,
                 Caixas = caixasDoPedido
-            };
-            listaFinalRespostas.Add(respostaPedido);
+            });
         }
 
         return listaFinalRespostas;
