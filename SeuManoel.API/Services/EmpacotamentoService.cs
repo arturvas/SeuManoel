@@ -5,14 +5,14 @@ namespace SeuManoel.API.Services;
 
 public class EmpacotamentoService
 {
+    private readonly CaixaSelector _caixaSelector = new CaixaSelector();
+    
     public List<RespostaPedidoDto> Empacotar(List<PedidoDto>? pedidos)
     {
         var listaFinalRespostas = new List<RespostaPedidoDto>();
 
         if (pedidos == null)
-        {
             return listaFinalRespostas;
-        }
 
         var caixasDisponiveis = new List<CaixaDisponivel>
         {
@@ -27,37 +27,19 @@ public class EmpacotamentoService
 
             foreach (var produto in pedido.Produtos)
             {
-                var alturaProduto = produto.Dimensoes.Altura;
-                var larguraProduto = produto.Dimensoes.Largura;
-                var comprimentoProduto = produto.Dimensoes.Comprimento;
-                var caixasPossiveis = new List<CaixaDisponivel>();
+                var menorCaixa = _caixaSelector.SelecionarCaixa(caixasDisponiveis, produto);
 
-                foreach (var caixa in caixasDisponiveis)
+                if (menorCaixa == null)
                 {
-                    if (alturaProduto <= caixa.Altura &&
-                        larguraProduto <= caixa.Largura &&
-                        comprimentoProduto <= caixa.Comprimento)
-                    {
-                        caixasPossiveis.Add(caixa);
-                    }
-                }
-
-                if (caixasPossiveis.Count == 0)
-                {
-                    var caixaNaoDisponivel = new RespostaCaixaDto
+                    caixasDoPedido.Add(new RespostaCaixaDto
                     {
                         CaixaId = null,
-                        Produtos = new List<string> { produto.ProdutoId },
+                        Produtos = new List<string>{ produto.ProdutoId },
                         Observacao = "Produto não cabe em nenhuma caixa disponível."
-                    };
-                    caixasDoPedido.Add(caixaNaoDisponivel);
+                    });
                 }
                 else
                 {
-                    var menorCaixa = caixasPossiveis
-                        .OrderBy(caixa => caixa.Altura * caixa.Largura * caixa.Comprimento)
-                        .First();
-
                     var respostaCaixa = caixasDoPedido
                         .FirstOrDefault(c => c.CaixaId == menorCaixa.CaixaId);
 
@@ -76,15 +58,14 @@ public class EmpacotamentoService
                     }
                 }
             }
-
-            var respostaPedido = new RespostaPedidoDto
+            
+            listaFinalRespostas.Add(new RespostaPedidoDto
             {
                 PedidoId = pedido.PedidoId,
                 Caixas = caixasDoPedido
-            };
-            listaFinalRespostas.Add(respostaPedido);
+            });
         }
-
+        
         return listaFinalRespostas;
     }
 }
