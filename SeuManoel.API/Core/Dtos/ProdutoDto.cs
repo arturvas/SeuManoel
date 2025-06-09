@@ -4,6 +4,8 @@ namespace SeuManoel.API.Core.Dtos;
 
 public class ProdutoDto
 {
+    public ProdutoDto() { }
+    
     public ProdutoDto(string produtoId, DimensaoDto dimensoes)
     {
         ProdutoId = produtoId;
