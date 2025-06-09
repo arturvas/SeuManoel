@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SeuManoel.API.Core.Dtos;
 using SeuManoel.API.Services;
@@ -15,6 +16,7 @@ public class PedidosController : ControllerBase
         _empacotamentoService = empacotamentoService;
     }
     
+    [Authorize]
     [HttpPost("empacotar")]
     public IActionResult EmpacotarPedidos([FromBody] PedidosRequestDto request)
     {
