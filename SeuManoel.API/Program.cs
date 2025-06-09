@@ -1,4 +1,6 @@
+using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SeuManoel.API.Core.Models;
 using SeuManoel.API.Services;
 
@@ -10,6 +12,19 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<EmpacotamentoService>();
 builder.Services.AddDbContext<SeuManoelContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes("voceNaoVaiVerMinhaSenhaSuperSecreta@987"))
+        };
+    });
 
 var app = builder.Build();
 
@@ -21,6 +36,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
