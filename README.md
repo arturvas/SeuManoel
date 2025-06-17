@@ -11,3 +11,6 @@
 
 ## Exemplo de chamada
 - Use o arquivo `entrada.json` em 'SeuManoel.API/temp/entrada.json' que foi fornecido no teste como corpo da requisição.
+
+
+⚠️ Nota: a senha do banco está exposta intencionalmente para facilitar a execução do teste.

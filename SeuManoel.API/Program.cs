@@ -8,6 +8,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<EmpacotamentoService>();
+builder.Configuration
+    .AddJsonFile("appsettings.json")
+    .AddJsonFile("appsettings.Development.json", optional: true)
+    .AddJsonFile("appsettings.Local.json", optional: true);
 builder.Services.AddDbContext<SeuManoelContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
